@@ -8,4 +8,3 @@ edition = "2018"
 quicksilver = "0.3"
 specs = "0.15"
 gunma = { path = "../gunma" }
-

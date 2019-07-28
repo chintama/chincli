@@ -14,7 +14,12 @@ struct Screen {
 impl State for Screen {
     fn new() -> Result<Screen> {
         Ok(Screen {
-            sys: Systems::new(Config::default()).unwrap(),
+            sys: Systems::new(
+                Config::build()
+                    .game_server("ws://127.0.0.1:8090/ws/")
+                    .build(),
+            )
+            .unwrap(),
         })
     }
 
