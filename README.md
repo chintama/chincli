@@ -1,0 +1,3 @@
+# chincli
+
+Chintama Game Client
