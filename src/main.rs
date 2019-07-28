@@ -1,3 +1,6 @@
+mod render;
+mod screen;
+
 fn main() {
-    println!("Hello, world!");
+    screen::run();
 }
