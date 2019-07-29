@@ -31,19 +31,19 @@ impl State for Screen {
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
         self.sys.fetch_action(|action| match *event {
             Event::Key(Key::Left, ButtonState::Pressed) => {
-                action.left = true;
+                action.left();
             }
             Event::Key(Key::Right, ButtonState::Pressed) => {
-                action.right = true;
+                action.right();
             }
             Event::Key(Key::Up, ButtonState::Pressed) => {
-                action.jump = true;
+                action.jump();
             }
             Event::Key(Key::Z, ButtonState::Pressed) => {
-                action.take = true;
+                action.take();
             }
             Event::Key(Key::X, ButtonState::Pressed) => {
-                action.drop = true;
+                action.drop();
             }
             Event::Key(Key::Escape, ButtonState::Pressed) => {
                 window.close();
