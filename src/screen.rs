@@ -1,14 +1,39 @@
 use crate::render::Render;
-use gunma::{Config, Systems};
+use gunma::{Config, Systems, components::Asset as AssetId};
 use quicksilver::{
+    prelude::*,
+    graphics::Image,
     geom::Vector,
     input::{ButtonState, Key},
     lifecycle::{self, Event, Settings, State, Window},
     Result,
 };
+use std::{collections::HashMap, cell::RefCell};
+
+pub type AssetsMap = HashMap<AssetId, Image>;
 
 struct Screen {
     sys: Systems,
+    assets: AssetsMap,
+}
+
+fn load_image(s: &str) -> Image {
+    Image::load(s).wait().unwrap()
+}
+
+fn load_assets() -> AssetsMap {
+    let mut assets = HashMap::new();
+
+    assets.insert(AssetId(1), load_image("ferris.png"));
+    assets.insert(AssetId(2), load_image("ferris-f.png"));
+    assets.insert(AssetId(3), load_image("cpp.png"));
+
+    assets.insert(AssetId(100), load_image("bubble.png"));
+    assets.insert(AssetId(200), load_image("ground.png"));
+    assets.insert(AssetId(900), load_image("gameover.png"));
+    assets.insert(AssetId(901), load_image("beach.png"));
+
+    assets
 }
 
 impl State for Screen {
@@ -19,7 +44,8 @@ impl State for Screen {
                     .game_server("ws://127.0.0.1:8090/ws/")
                     .build(),
             )
-            .unwrap(),
+                .unwrap(),
+            assets: load_assets(),
         })
     }
 
@@ -55,7 +81,7 @@ impl State for Screen {
     }
 
     fn draw(&mut self, window: &mut Window) -> Result<()> {
-        let render = Render::new(window);
+        let render = Render::new(window, self.assets.clone());
         self.sys.render(render);
         Ok(())
     }
