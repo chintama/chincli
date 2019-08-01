@@ -27,6 +27,7 @@ fn load_assets() -> AssetsMap {
     assets.insert(AssetId(1), load_image("ferris.png"));
     assets.insert(AssetId(2), load_image("ferris-f.png"));
     assets.insert(AssetId(3), load_image("cpp.png"));
+    assets.insert(AssetId(4), load_image("bjarne.png"));
 
     assets.insert(AssetId(100), load_image("bubble.png"));
     assets.insert(AssetId(200), load_image("ground.png"));

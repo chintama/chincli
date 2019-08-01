@@ -84,7 +84,7 @@ impl<'a, 'b> System<'a> for Render<'b> {
                     };
                     self.img(id)
                 }
-                Noen => None,
+                None => None,
             };
 
             match img {
