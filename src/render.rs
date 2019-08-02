@@ -1,13 +1,16 @@
-use gunma::{resources::*, components::*};
+use crate::screen::AssetsMap;
+use gunma::components::Asset as AssetId;
+use gunma::{
+    components::{Block, Bullet, Dir, Player, Pos, Size, User},
+    resources::*,
+};
 use quicksilver::{
-    prelude::*,
     geom::{Rectangle, Vector},
     graphics::{Background::Col, Color},
     lifecycle::Window,
+    prelude::*,
 };
 use specs::prelude::*;
-use crate::screen::AssetsMap;
-use gunma::components::Asset as AssetId;
 
 pub struct Render<'a> {
     window: &'a mut Window,
@@ -37,7 +40,7 @@ impl<'a> Render<'a> {
 impl<'a, 'b> System<'a> for Render<'b> {
     type SystemData = (
         Entities<'a>,
-        Read<'a, User>,
+        ReadStorage<'a, User>,
         ReadStorage<'a, Pos>,
         ReadStorage<'a, Size>,
         ReadStorage<'a, Bullet>,
@@ -53,18 +56,18 @@ impl<'a, 'b> System<'a> for Render<'b> {
         let center = self.window.screen_size() / 2.0;
         let center = Pos::new(center.x, 0.0);
         let mut origin = Pos::new(0.0, 0.0);
-        for (pos, player) in (&pos, &player).join() {
-            if !user.is_me(player) {
-                continue;
-            }
+        for (pos, player, _) in (&pos, &player, &user).join() {
             origin = Pos::new(pos.x, 0.0);
         }
 
         self.window.clear(Color::WHITE).unwrap();
         let bgimg = self.img(AssetId(901)).unwrap();
-        self.window.draw(&Rectangle::new(Vector::new(0.0, 0.0), Vector::new(800.0, 600.0)), Blended(&bgimg, Color::from_rgba(250, 250, 250, 0.5)));
+        self.window.draw(
+            &Rectangle::new(Vector::new(0.0, 0.0), Vector::new(800.0, 600.0)),
+            Blended(&bgimg, Color::from_rgba(250, 250, 250, 0.5)),
+        );
 
-        let mut drw = |e, pos: &Pos, siz: &Size|{
+        let mut drw = |e, pos: &Pos, siz: &Size| {
             let col = if player.get(e).is_some() {
                 Col(Color::GREEN)
             } else if bullet.get(e).is_some() {
@@ -90,7 +93,7 @@ impl<'a, 'b> System<'a> for Render<'b> {
             match img {
                 Some(img) => {
                     self.drw(*pos, *siz, origin, center, Img(&img));
-                },
+                }
                 None => {
                     self.drw(*pos, *siz, origin, center, col);
                 }
@@ -99,7 +102,7 @@ impl<'a, 'b> System<'a> for Render<'b> {
 
         for (e, pos, siz) in (&e, &pos, &siz).join() {
             if bullet.get(e).is_some() {
-                continue
+                continue;
             }
             drw(e, pos, siz)
         }

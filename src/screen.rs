@@ -1,19 +1,25 @@
 use crate::render::Render;
-use gunma::{Config, Systems, components::Asset as AssetId};
-use quicksilver::{
+use gunma::{
+    components::{Asset as AssetId, Player, Pos, Size, CLASS_CHIBA},
     prelude::*,
-    graphics::Image,
+    resources::Action,
+    Config, Io, Systems,
+};
+use quicksilver::{
     geom::Vector,
+    graphics::Image,
     input::{ButtonState, Key},
     lifecycle::{self, Event, Settings, State, Window},
+    prelude::*,
     Result,
 };
-use std::{collections::HashMap, cell::RefCell};
+use std::{cell::RefCell, collections::HashMap};
 
 pub type AssetsMap = HashMap<AssetId, Image>;
 
 struct Screen {
     sys: Systems,
+    action: Action,
     assets: AssetsMap,
 }
 
@@ -39,44 +45,57 @@ fn load_assets() -> AssetsMap {
 
 impl State for Screen {
     fn new() -> Result<Screen> {
+        let mut sys = Systems::new().unwrap();
+        let mut io = Io::new(Config::default()).unwrap();
+
+        for t in io.get_all_terrain().unwrap() {
+            sys.create_entity()
+                .create_terrain_block(t.pos, t.size, t.asset);
+        }
+
+        sys.create_entity().create_user(
+            Pos::new(500.0, 300.0),
+            Size::new(50.0, 40.0),
+            Player::new(1, CLASS_CHIBA, 10),
+            AssetId(1),
+        );
+
         Ok(Screen {
-            sys: Systems::new(
-                Config::build()
-                    .game_server("ws://127.0.0.1:8090/ws/")
-                    .build(),
-            )
-                .unwrap(),
+            action: Action::default(),
+            sys,
             assets: load_assets(),
         })
     }
 
     fn update(&mut self, _: &mut Window) -> Result<()> {
+        self.sys.add_action(self.action.clone());
+        self.action.clear();
         self.sys.update();
         Ok(())
     }
 
     fn event(&mut self, event: &Event, window: &mut Window) -> Result<()> {
-        self.sys.fetch_action(|action| match *event {
+        match *event {
             Event::Key(Key::Left, ButtonState::Pressed) => {
-                action.left();
+                self.action.left();
             }
             Event::Key(Key::Right, ButtonState::Pressed) => {
-                action.right();
+                self.action.right();
             }
             Event::Key(Key::Up, ButtonState::Pressed) => {
-                action.jump();
+                self.action.jump();
             }
             Event::Key(Key::Z, ButtonState::Pressed) => {
-                action.take();
+                self.action.take();
             }
             Event::Key(Key::X, ButtonState::Pressed) => {
-                action.drop();
+                self.action.drop();
             }
             Event::Key(Key::Escape, ButtonState::Pressed) => {
                 window.close();
             }
             _ => (),
-        });
+        }
 
         Ok(())
     }
