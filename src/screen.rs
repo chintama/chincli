@@ -46,19 +46,22 @@ fn load_assets() -> AssetsMap {
 impl State for Screen {
     fn new() -> Result<Screen> {
         let mut sys = Systems::new().unwrap();
-        let mut io = Io::new(Config::default()).unwrap();
+        let mut io = Io::new(
+            Config::build()
+                .game_server("ws://127.0.0.1:8090/ws/")
+                .build(),
+        )
+        .unwrap();
 
         for t in io.get_all_terrain().unwrap() {
             sys.create_entity()
                 .create_terrain_block(t.pos, t.size, t.asset);
         }
 
-        sys.create_entity().create_user(
-            Pos::new(500.0, 300.0),
-            Size::new(50.0, 40.0),
-            Player::new(1, CLASS_CHIBA, 10),
-            AssetId(1),
-        );
+        let ack = io.login(CLASS_CHIBA).unwrap();
+
+        sys.create_entity()
+            .create_user(ack.spawn, Size::new(50.0, 40.0), ack.player, AssetId(1));
 
         Ok(Screen {
             action: Action::default(),
